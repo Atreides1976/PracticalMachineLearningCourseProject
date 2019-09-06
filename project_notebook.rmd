@@ -1,0 +1,48 @@
+---
+title: "Practical Machine Learning Course"
+author: "Andres Lopez"
+date: "September 2nd, 2019"
+output: html_document
+---
+
+# 1. Introduction
+This is a notebook for the project included in the course "Practical Machine Learning".  We have several data inputs from *health devices*, collecting data from accelerometers on the belt, forearm, arm, and dumbell from several users.
+
+I am going to do an exploratory analysis of the input data from the accelerometers, trying to detect the relationships between them.  After this, I am going to decide the best prediction model and implement it.
+
+# 2. Load the libraries for the exploratory analysis
+
+```{r}
+library(caret)
+library(ggplot2)
+library(forecast)
+library(randomForest)
+library(readr)
+library(ISLR)
+```
+
+# 3. Load data
+The fist step is load the training data, used for creating our model, and the testing data, used to test our model after its creation.
+
+```{r}
+pml_training <- read_csv("pml-training.csv")
+pml_testing <- read_csv("pml-testing.csv")
+```
+
+# 4. First view of the data
+After a first view of the training data, there are a lot of columns with *NA* value on a lot of the data records.  I will create a subset of the data removing these columns from the training data, to keep the relevant data for the prediction model.
+
+```{r}
+training <- subset(pml_training,select = c(X1,user_name,cvtd_timestamp,gyros_belt_x,gyros_belt_y,gyros_belt_z,accel_belt_x,accel_belt_y,accel_belt_z,magnet_belt_x,magnet_belt_y,magnet_belt_z))
+View(training)
+
+```
+
+
+# 5. Finding correlations between data
+
+
+
+
+
+
