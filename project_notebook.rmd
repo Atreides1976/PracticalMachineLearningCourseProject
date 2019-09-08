@@ -5,6 +5,12 @@ date: "September 2nd, 2019"
 output: html_document
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(results = 'hide')
+```
+                      
+
 # 1. Introduction
 This is a notebook for the project included in the course "Practical Machine Learning".  We have several data inputs from *health devices*, collecting data from accelerometers on the belt, forearm, arm, and dumbell from several users.
 
@@ -12,19 +18,23 @@ I am going to do an exploratory analysis of the input data from the acceleromete
 
 # 2. Load the libraries for the exploratory analysis
 
-```{r}
+```{r, results = 'hide'}
 library(caret)
 library(ggplot2)
 library(forecast)
 library(randomForest)
 library(readr)
 library(ISLR)
+library(dplyr)
+library(skimr)
+library(lubridate)
+library(tidyr)
 ```
 
 # 3. Load data
 The fist step is load the training data, used for creating our model, and the testing data, used to test our model after its creation.
 
-```{r}
+```{r, results = 'hide'}
 pml_training <- read_csv("pml-training.csv")
 pml_testing <- read_csv("pml-testing.csv")
 ```
@@ -32,17 +42,48 @@ pml_testing <- read_csv("pml-testing.csv")
 # 4. First view of the data
 After a first view of the training data, there are a lot of columns with *NA* value on a lot of the data records.  I will create a subset of the data removing these columns from the training data, to keep the relevant data for the prediction model.
 
-```{r}
-training <- subset(pml_training,select = c(X1,user_name,cvtd_timestamp,gyros_belt_x,gyros_belt_y,gyros_belt_z,accel_belt_x,accel_belt_y,accel_belt_z,magnet_belt_x,magnet_belt_y,magnet_belt_z))
-View(training)
+```{r, results = 'hide'}
+skim(pml_training)
 
+training <- subset(pml_training,select = c(X1,user_name,cvtd_timestamp,gyros_belt_x,gyros_belt_y,gyros_belt_z,accel_belt_x,accel_belt_y,accel_belt_z,magnet_belt_x,magnet_belt_y,magnet_belt_z,
+gyros_arm_x,gyros_arm_y,gyros_arm_z,accel_arm_x,accel_arm_y,accel_arm_z,magnet_arm_x,magnet_arm_y,magnet_arm_z, gyros_dumbbell_x,gyros_dumbbell_y,gyros_dumbbell_z,accel_dumbbell_x,accel_dumbbell_y,accel_dumbbell_z,magnet_dumbbell_x,magnet_dumbbell_y,magnet_dumbbell_z,
+gyros_forearm_x,gyros_forearm_y,gyros_forearm_z,accel_forearm_x,accel_forearm_y,accel_forearm_z,magnet_forearm_x,magnet_forearm_y,magnet_forearm_z,classe))
+
+skim(training)
+
+```
+Also we can plot, as an example, the belt variables to check for anomalies in the data:
+
+```{r}
+training %>%
+  select_if(is.numeric) %>%
+  gather() %>%
+  ggplot(aes(value)) + geom_bar() + facet_wrap(~key,scales='free') +
+  theme(axis.text=element_text(size=6))
+```
+
+I will change the type of some of the variables to manage them better.  The **classe** variable is changed to factor data type and the **cvtd_timestamp** variable is change to time data type.
+
+```{r, results = 'hide'}
+training <- training %>%
+  mutate(classe = as.factor(classe), 
+         cvtd_timestamp = as.Date(cvtd_timestamp))  
 ```
 
 
 # 5. Finding correlations between data
 
+A matrix with correlations are made to check correlations between variables:
 
+```{r}
+training %>%
+  select_if(is.numeric) %>%
+  cor() %>% 
+  round(digits = 1)
+```
 
+I can see several high correlations between variables in the devices in same part of the body.  We need to take this into account in the generation of the model.  It should be possible to divide the data set in the different variables from the different parts of the body, and them joint all the models into the final model.
 
+*End of document*
 
 
